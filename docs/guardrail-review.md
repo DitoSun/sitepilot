@@ -184,6 +184,33 @@ understanding that a portable static check cannot supply reliably (G-04/G-05/G-0
 `Validated knowledge density` applies to automation too: **one proven check beats
 six noisy ones.**
 
+### A note on monitoring (follow-up, deliberately not built here)
+
+A health check only becomes monitoring when it is **executed and it delivers an
+alert**. `cron → log file` is not monitoring — nobody reads the log, which
+reproduces the original problem in a new costume.
+
+When wiring SitePilot's checker into a real site later, the shape should be:
+
+```
+scheduled check
+  → healthy:                stay silent
+  → warning/failure threshold reached
+  → notification            (channel chosen per environment)
+  → the actionable evidence (which check failed, what it saw, where it ran)
+```
+
+Two things this implies, both already supported by v1.0.1 but easy to get wrong:
+
+- The alert must carry the **vantage point** — a failure from a server-local
+  check and a failure from the public path are different findings (EXP-117).
+- The alert must fire on **repeated** warnings, not only on hard failures;
+  a certificate inside its renewal window is exactly the case where a quiet
+  warning is worth more than a later outage (EXP-118).
+
+Scheduling and alerting are per-environment decisions, so they are not shipped
+in a read-only skill. Recorded here so the gap is visible rather than forgotten.
+
 ### Roadmap (not in this patch)
 
 1. Project config contract (`sitepilot.config`): `runtime_data_paths`,
