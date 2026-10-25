@@ -1,0 +1,9 @@
+{
+  "name": "corner-store",
+  "version": "2.4.1",
+  "scripts": {
+    "start": "node src/server.js",
+    "build": "node build.js",
+    "cleanup": "node src/jobs/cleanup.js"
+  }
+}

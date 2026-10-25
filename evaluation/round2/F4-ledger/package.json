@@ -1,0 +1,8 @@
+{
+  "name": "membership-ledger",
+  "version": "0.9.3",
+  "scripts": {
+    "start": "node src/index.js",
+    "rebuild-cache": "node src/rebuild-cache.js"
+  }
+}

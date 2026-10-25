@@ -1,0 +1,7 @@
+{
+  "page": "index.html",
+  "slots": {
+    "title": "Acme \u2014 ship faster",
+    "tagline": "Deploy with confidence."
+  }
+}

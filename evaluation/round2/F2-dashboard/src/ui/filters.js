@@ -1,0 +1,1 @@
+export function applyFilters(rows, f) { return rows.filter(r => !f.level || r.level === f.level); }

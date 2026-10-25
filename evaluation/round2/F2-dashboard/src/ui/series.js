@@ -1,0 +1,1 @@
+export const series = (rows) => rows.map(r => r.value);

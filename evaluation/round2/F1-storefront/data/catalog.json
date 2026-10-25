@@ -1,0 +1,34 @@
+{
+  "products": [
+    {
+      "sku": "TS-001",
+      "name": "Cotton Tee",
+      "price": 24.0,
+      "stock": 140
+    },
+    {
+      "sku": "TS-002",
+      "name": "Heavy Tee",
+      "price": 32.0,
+      "stock": 88
+    },
+    {
+      "sku": "HD-001",
+      "name": "Zip Hoodie",
+      "price": 68.0,
+      "stock": 31
+    },
+    {
+      "sku": "CP-001",
+      "name": "Six Panel Cap",
+      "price": 28.0,
+      "stock": 0
+    },
+    {
+      "sku": "BG-001",
+      "name": "Canvas Tote",
+      "price": 18.0,
+      "stock": 210
+    }
+  ]
+}

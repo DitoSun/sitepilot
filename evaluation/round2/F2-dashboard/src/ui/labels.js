@@ -1,0 +1,1 @@
+export const labels = { cpu: 'CPU', mem: 'Memory', rps: 'Requests/s' };

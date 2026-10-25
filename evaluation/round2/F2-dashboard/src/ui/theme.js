@@ -1,0 +1,1 @@
+export const theme = { bg: '#0b0d10', fg: '#e6e6e6' };

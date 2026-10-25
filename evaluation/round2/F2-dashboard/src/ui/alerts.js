@@ -1,0 +1,1 @@
+export const alerts = (rows) => rows.filter(r => r.level === 'error');

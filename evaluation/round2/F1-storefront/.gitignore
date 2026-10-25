@@ -1,0 +1,7 @@
+node_modules/
+dist/
+logs/
+data/orders.json
+data/carts.json
+data/sessions.json
+.env

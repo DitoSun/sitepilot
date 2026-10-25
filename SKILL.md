@@ -59,6 +59,43 @@ Load the matching module **before acting**, not after:
 | Unknown stack encountered | `recipes/README.md` → detect stack → matching recipe |
 | Just finished an incident / learned something new | `references/experience-loop.md` |
 
+### 2.1 Baseline first-pass — do this BEFORE loading any reference
+
+Loading a reference narrows attention to what that reference covers. Do a short,
+unguided scan first, then load the module.
+
+| Baseline question | Why it comes first |
+|---|---|
+| **Exposure** — who can reach this? | A reachable surface is a risk surface, whatever the module says |
+| **Authentication** — who is allowed to call it? | The most commonly missed question; no reference prompts it unless you look |
+| **Authorization** — can caller A act on B's data? | Auth ≠ authz; a valid session says nothing about scope |
+| **Input trust** — which values come from the client? | Body, query, header, cookie, localStorage — none are identity |
+| **Destructive capability** — what can this code delete or overwrite? | Determines the blast radius before you know the bug |
+| **Data sensitivity** — what is stored here, and who is in it? | Changes severity by an order of magnitude |
+| **Persistence** — where does state live, and is it the authoritative copy? | Explains divergence and rollback limits |
+| **External dependencies** — what breaks if they do? | Explains symptoms that look like local bugs |
+| **Deployment/runtime boundary** — what is actually running, and from which artifact? | Distinguishes "code is wrong" from "something else is serving" |
+
+Only after this pass, load the domain modules for whatever the task touches. The
+baseline is not a substitute for them — it is what stops them from becoming your
+entire field of view.
+
+### 2.2 Every endpoint gets six questions
+
+For any API route, handler, action, or form — *regardless of whether a
+security reference is loaded*:
+
+1. **Who can call it?** Anonymous? Any logged-in user? An admin?
+2. **Which methods are accepted?** And what happens on the ones you did not intend?
+3. **What data does it return?** Whose data? Fields you would not print aloud?
+4. **What can it modify or destroy?** Is that reversible?
+5. **What identity does it trust?** A session, or a value the caller supplied?
+6. **What happens on invalid input?** Error, crash, silent empty result, or worse?
+
+This is minimum attack-surface awareness, not a compliance checklist. A public
+endpoint is not automatically a vulnerability — but "it is public on purpose"
+must be a *conclusion you reached*, not an assumption you never tested.
+
 ---
 
 ## 3. CORE PRINCIPLES (non-negotiable)
@@ -103,6 +140,14 @@ Load the matching module **before acting**, not after:
     answer different questions. A renewed certificate, a running process, or a
     passing localhost request proves nothing about what a visitor receives.
     **[REAL]**
+17. **References are prompts for investigation, not boundaries of it.** The
+    checklists and references in this skill are starting points, not a closed
+    world. Never let the module you loaded define the whole problem space: a
+    session reading only `monitoring.md` will find monitoring problems and miss
+    that the endpoint has no authentication. **The skill must expand your
+    attention, not replace it.** When you notice you have produced only findings
+    that map to the reference you loaded, stop and ask what that reference does
+    not cover. **[REAL]**
 
 ---
 

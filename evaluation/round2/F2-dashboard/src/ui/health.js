@@ -1,0 +1,1 @@
+export const health = (s) => s.ok ? 'green' : 'red';

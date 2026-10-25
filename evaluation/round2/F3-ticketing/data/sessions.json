@@ -1,0 +1,17 @@
+{
+  "tok_a": {
+    "userId": "u-1",
+    "role": "agent",
+    "exp": 4102444800000
+  },
+  "tok_b": {
+    "userId": "u-2",
+    "role": "agent",
+    "exp": 4102444800000
+  },
+  "tok_z": {
+    "userId": "u-9",
+    "role": "admin",
+    "exp": 4102444800000
+  }
+}

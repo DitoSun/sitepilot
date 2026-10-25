@@ -1,0 +1,12 @@
+{
+  "name": "ops-dashboard",
+  "version": "1.8.0",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

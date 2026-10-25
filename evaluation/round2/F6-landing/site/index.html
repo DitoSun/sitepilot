@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<h1>{{title}}</h1>
+<p>{{tagline}}</p>
+<form action="/api/lead" method="post">
+  <input name="email" type="email" required>
+  <button type="submit">Get updates</button>
+</form>
+</body>
+</html>

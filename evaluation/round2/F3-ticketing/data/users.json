@@ -1,0 +1,17 @@
+[
+  {
+    "id": "u-1",
+    "email": "agent1@example.com",
+    "role": "agent"
+  },
+  {
+    "id": "u-2",
+    "email": "agent2@example.com",
+    "role": "agent"
+  },
+  {
+    "id": "u-9",
+    "email": "admin@example.com",
+    "role": "admin"
+  }
+]

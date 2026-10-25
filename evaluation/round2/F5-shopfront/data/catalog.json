@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "sku": "A-1",
+      "name": "Mug",
+      "price": 12.0
+    },
+    {
+      "sku": "A-2",
+      "name": "Tote",
+      "price": 18.0
+    },
+    {
+      "sku": "A-3",
+      "name": "Poster",
+      "price": 9.5
+    }
+  ]
+}

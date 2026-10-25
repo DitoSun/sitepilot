@@ -1,0 +1,1 @@
+export function lineChart(el, points) { el.dataset.points = String(points.length); }

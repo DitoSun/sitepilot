@@ -1,0 +1,7 @@
+# Round 2 fixture freeze — 2026-10-25T15:27:56Z
+F1-storefront d27805833e4fea456f43d9e4fa3b6a5c
+F2-dashboard 47f50fa6f69689e9c17127b78eb26839
+F3-ticketing 6f7df3b8390ad8b2fa4cb7cf177d8e11
+F4-ledger def0c9bcf273571bfb1813e7dc18a012
+F5-shopfront e50df1dad2af7000bb6d5da37f1020d0
+F6-landing 514694819dc5ab2da9f0319bacc7e16c

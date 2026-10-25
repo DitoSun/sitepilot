@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "q": "How do I reset my password?",
+      "a": "Use the reset link on the login page."
+    },
+    {
+      "q": "Where are invoices?",
+      "a": "Billing -> Invoices."
+    }
+  ]
+}

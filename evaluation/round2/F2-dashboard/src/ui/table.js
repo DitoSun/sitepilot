@@ -1,0 +1,1 @@
+export function table(el, rows) { el.dataset.rows = String(rows.length); }

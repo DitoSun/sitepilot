@@ -1,0 +1,1 @@
+export const layout = { cols: 3, gap: 16 };

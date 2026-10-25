@@ -1,0 +1,7 @@
+{
+  "page": "pricing.html",
+  "slots": {
+    "title": "Pricing",
+    "body": "Free while in beta."
+  }
+}

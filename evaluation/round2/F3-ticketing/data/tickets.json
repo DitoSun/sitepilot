@@ -1,0 +1,26 @@
+[
+  {
+    "id": "t-1",
+    "subject": "Login loop on Safari",
+    "assignee": "u-1",
+    "status": "open",
+    "priority": "high",
+    "replies": []
+  },
+  {
+    "id": "t-2",
+    "subject": "Invoice shows wrong VAT",
+    "assignee": "u-1",
+    "status": "open",
+    "priority": "normal",
+    "replies": []
+  },
+  {
+    "id": "t-3",
+    "subject": "Refund not received",
+    "assignee": "u-2",
+    "status": "pending",
+    "priority": "urgent",
+    "replies": []
+  }
+]
