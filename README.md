@@ -80,13 +80,17 @@ Then point your agent at it:
 |---|---|
 | Claude Code / Codex / Cursor | Copy or symlink `SKILL.md` into your agent's skills directory, or reference the repo path in your project instructions |
 | Any agent with file access | Add to your project's agent instructions: `Follow C:/path/to/sitepilot/SKILL.md and load the referenced modules as needed` |
-| CI / automation | Call `scripts/site-health-check.sh <url> --json` (read-only; exit `0` pass, `3` pass-with-warnings, `1` fail) |
+| CI / automation | `bash scripts/site-health-check.sh <url> --json` (read-only; exit `0` pass, `3` pass-with-warnings, `1` fail) |
 
 Verify the checker itself before trusting it:
 
 ```bash
-./scripts/tests/health-check-regression.sh
+bash scripts/tests/health-check-regression.sh
 ```
+
+Both scripts are checked in with the executable bit set, so `./scripts/...`
+also works on Unix-like systems; `bash scripts/...` additionally works where
+the bit is not preserved (some Windows/archive extraction paths).
 
 ## Use
 
@@ -172,7 +176,7 @@ SitePilot is designed for production:
 - **Never guess infrastructure**: detect → confirm → act
 - **Reversible first**: rollback points created and verified before risky changes
 - **Read-only automation**: the bundled script only performs GET/HEAD requests and local TLS inspection — no writes, no restarts, no secret logging
-- **Itself tested on failure paths**: `scripts/tests/health-check-regression.sh` proves the health check *fails* when it should — unreachable host, expired certificate, timeout, hostname mismatch. A check that has only ever passed is not evidence of anything
+- **Itself tested on failure paths**: `bash scripts/tests/health-check-regression.sh` proves the health check *fails* when it should — unreachable host, expired certificate, timeout, hostname mismatch. A check that has only ever passed is not evidence of anything
 - **Lessons, not secrets**: credentials, tokens, user data, and private infrastructure never enter the skill or its outputs
 - **Evidence honesty**: every rule is marked `[REAL]` (from a real incident), `[DERIVED]`, or `[GENERAL]` (general best practice) — we never dress general advice up as battle scars
 

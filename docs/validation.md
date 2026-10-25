@@ -26,15 +26,22 @@ paths fail cannot be trusted.*
 
 ### Suite
 
-`scripts/tests/health-check-regression.sh` — 19 assertions, no external network
+`scripts/tests/health-check-regression.sh` — 20 assertions, no external network
 required, fixtures generated locally (throwaway HTTP/TLS servers, certificates
 with controlled `notBefore`/`notAfter`).
 
 ```
 $ ./scripts/tests/health-check-regression.sh
- PASSED: 19   FAILED: 0   SKIPPED: 0
+ PASSED: 20   FAILED: 0   SKIPPED: 0
  RESULT: ALL CASES PASSED      (exit 0)
 ```
+
+Composition: 9 HTTP cases + 8 TLS date/hostname cases + 1 chain-classification
+case + 2 verdict/exit-code integrity checks = 20.
+
+The `$ ./…` form above is the Unix invocation and is valid as shipped — both
+scripts carry the executable bit in the repository. `bash scripts/…` works too,
+including on systems where that bit is not preserved.
 
 ### HTTP matrix — 9/9
 

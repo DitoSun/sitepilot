@@ -3,6 +3,27 @@
 All notable changes to SitePilot are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+Post-release **packaging and documentation** fix. No functional, behavioural or
+knowledge-base change — the v1.0.1 release and its tag are unchanged.
+
+### Fixed
+- **Shell scripts now carry the executable bit in git.** `scripts/site-health-check.sh`
+  and `scripts/tests/health-check-regression.sh` were committed as `100644`, so a
+  fresh clone could not run `./scripts/...` (only `bash scripts/...`). Both are
+  now `100755`. File contents are byte-identical to v1.0.1.
+
+### Changed
+- **README invocation examples use `bash scripts/...`**, which works regardless of
+  whether the executable bit survives (Windows checkouts, archive extraction).
+  The `./scripts/...` form is documented as also valid on Unix-like systems.
+- **`docs/validation.md`**: corrected the regression-suite assertion count
+  (19 → 20) to match the shipped suite, and listed its composition.
+
+> This entry is under `Unreleased` on purpose: v1.0.1 does **not** contain these
+> changes, and its release notes are left as published.
+
 ## [1.0.1] - 2026-10-25
 
 The first patch learned in the wild: SitePilot's own health check gave two
