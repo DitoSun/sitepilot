@@ -1,0 +1,7 @@
+# Local experience stores are project-private, never committed upstream
+.sitepilot/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
