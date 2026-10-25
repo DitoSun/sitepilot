@@ -128,19 +128,21 @@ to be added together:
 
 | Axis | Figure |
 |---|---|
-| **Origin** | 111 seeded from the incident history of **one** real production website, plus 7 learned through live dogfooding — **118 total** |
+| **Origin** | 111 seeded from the incident history of one real production website, plus 7 learned through live dogfooding — **118 total** |
 | **Evidence** | 116 grounded in real operations, 2 explicitly marked as general practice |
 
-> **118 lessons, each labeled by evidence: 116 grounded in real operations,
-> 2 explicitly marked as general practice.**
+> **118 lessons, 116 grounded in real operations and 2 explicitly marked as
+> general practice — each mapped to the rule that enforces it.**
 
-Every lesson is tagged `[REAL]`, `[DERIVED]` or `[GENERAL]`, and mapped to the
-rule, reference, checklist, playbook, recipe or automated check that enforces it
-(`docs/experience-mapping.md`).
+Evidence strength is marked `[REAL]` (real incident), `[DERIVED]` (inferred from
+real evidence) or `[GENERAL]` (general best practice, limited first-party
+evidence) at rule level throughout `references/`. The lesson-to-enforcement-point
+map is in `docs/experience-mapping.md`; the seven learned-in-the-wild lessons each
+carry their provenance in `docs/experience-log.md`.
 
-The intent is **depth before breadth**: long-horizon extraction from one site's
-real incident history, rather than assembling a generic operations checklist off
-the internet.
+The intent is **depth before breadth**: long-horizon extraction from a site
+actually operated over time, rather than assembling a generic operations
+checklist off the internet.
 
 ## Core Principles
 
