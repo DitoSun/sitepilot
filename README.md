@@ -2,48 +2,43 @@
 
 **Give your AI coding agents production instincts.**
 
-An open-source **Website Operations Skill** for AI agents — 118 lessons drawn
-from one real production website's incident history and from SitePilot's own
-first dogfooding run.
-
 > Your agent already knows how to write code.
 > SitePilot teaches it what can go wrong after the code is written.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Skill](https://img.shields.io/badge/type-AI%20Agent%20Skill-blue)](SKILL.md)
+SitePilot is an open-source Website Operations Skill that teaches AI coding
+agents how to safely deploy, verify, troubleshoot, and operate real websites.
+
+**118 lessons · 20 negative-path tests · MIT licensed**
+
+English | [简体中文](README.zh-CN.md)
 
 ---
 
 ## What
 
-SitePilot is an operating layer, not a tutorial. Before an agent touches
-anything, it has to answer:
+SitePilot gives coding agents the operational judgment they usually lack around
+production. Before an agent touches anything, it has to answer:
 
-- What must I check before I act?
+- What must I check before acting?
 - What am I never allowed to guess?
 - How risky is this change?
 - When must I stop and ask?
-- How do I prove the site *actually* works?
+- How do I prove production actually works?
 
-It works on any stack — personal blog, corporate site, content site, SaaS, API
-service, self-hosted or cloud-deployed. The core stays stack-neutral;
-stack-specific traps live in `recipes/` and load only after the agent detects
-what it is looking at.
+**The core is stack-agnostic.** Stack-specific lessons live in `recipes/`, which
+the agent loads only after it has identified what it is looking at.
 
-## Why?
+## Why
 
-AI coding agents are great at building websites. Production is different.
-
-| What looks fine | What is actually happening |
+| Looks like success | What it actually proves |
 |---|---|
-| The deploy succeeded | The website is broken |
-| The endpoint returns HTTP 200 | Data is silently truncated, cached or soft-degraded |
-| "We have backups" | Nothing was ever restored from them |
-| `.gitignore` contains the rule | The sensitive files are still tracked |
-| "We copied the existing auth pattern" | The existing pattern was the vulnerability |
+| Deployment succeeded | ≠ production works |
+| HTTP 200 | ≠ business semantics are correct |
+| A backup exists | ≠ the backup is restorable |
+| `.gitignore` contains the rule | ≠ sensitive tracked files are protected |
+| The existing auth pattern | ≠ a secure auth pattern |
 
-Each of these is cheap to prevent and expensive to discover. SitePilot gives
-agents operational judgment **before** they touch production.
+Each of these is cheap to prevent and expensive to discover.
 
 ## Quick Start
 
@@ -53,46 +48,32 @@ No build step, no dependencies — a folder of Markdown plus one shell script.
 git clone https://github.com/DitoSun/sitepilot.git
 ```
 
-Then point your coding agent at `SKILL.md`:
+Tell your coding agent:
 
-| Agent | How |
-|---|---|
-| Claude Code / Codex / Cursor | Copy or symlink `SKILL.md` into your agent's skills directory, or reference the repo path in your project instructions |
-| Any agent with file access | Add to your project's agent instructions: `Follow <path>/sitepilot/SKILL.md and load the referenced modules as needed` |
-| CI / automation | `bash scripts/site-health-check.sh <url> --json` (read-only; exit `0` pass, `3` pass-with-warnings, `1` fail) |
+> **Read `sitepilot/SKILL.md` and use SitePilot for this website.**
 
-The bundled health checker is itself tested on its failure paths:
-
-```bash
-bash scripts/tests/health-check-regression.sh
-```
-
-Both scripts carry the executable bit in the repository, so `./scripts/...` also
-works on Unix-like systems; `bash scripts/...` additionally works where that bit
-is not preserved (some Windows and archive-extraction paths).
+That is the whole installation. `SKILL.md` routes to the module a given task
+needs; the agent does not have to read the references, playbooks or docs up front.
 
 ## Try It
 
-Then just talk to your agent:
+### Troubleshooting
 
 > My website is down. Find the cause safely. Don't make destructive changes until you understand which layer is failing.
 
+### Deployment
+
 > Review this deployment before I push it to production.
+
+### Audit
 
 > Find the highest-risk operational problems in this website and explain what should be fixed first.
 
 ## Learned in the Wild
 
 SitePilot's first real production run found an expired TLS certificate — and then
-exposed a flaw in SitePilot's **own** health checker.
-
-The checker could report success under failure conditions:
-
-- a target that could not be reached at all was reported **healthy**
-- an expired certificate was rounded into a **non-failing** state
-
-Neither was findable by happy-path testing, because on a healthy site the output
-is correct.
+exposed a flaw in SitePilot's **own** health checker, which could report success
+under failure conditions.
 
 Rather than quietly patching it, the failure went through the loop the skill is
 built around:
@@ -102,43 +83,49 @@ Incident → Root Cause → Lesson → Generalization
 → Fix → Negative-path Tests → Stronger Skill
 ```
 
-That run produced 7 new learned-in-the-wild experiences and a 20-case regression
-suite proving the failure paths fail — expired 1 second ago, expired 3 hours ago,
-expired 5 days ago, wrong hostname, no certificate served, connection refused,
-DNS failure, timeout, TLS handshake failure — plus an assertion that the printed
-verdict always agrees with the process exit code.
+The experience base grew from 111 to **118**, and the checker now ships with a
+20-case negative-path regression suite that proves the failure paths fail.
+Details: [`docs/validation.md`](docs/validation.md).
 
-It also produced the two principles this project is least likely to trade away:
+## Lessons Can Be Wrong
 
-> A check that has not demonstrated that its failure paths fail cannot be trusted.
+An earlier lesson said new admin endpoints should copy the existing auth pattern
+from production code. Three endpoints did — and the existing pattern turned out
+to be the vulnerability.
 
-> Monitoring software that converts failure into success creates false
-> confidence, and may be more dangerous than having no check at all.
+So lessons carry a status — `CHALLENGED`, `CORRECTED`, `SUPERSEDED`, `RETIRED` —
+and are corrected without erasing history. A lesson that says *"copy what already
+exists"* is a red flag unless it also says *"after verifying that what exists is
+correct."*
 
-And a lesson about lessons: an earlier operational note said *"new admin endpoints
-must copy the existing convention from production code."* Three endpoints followed
-it faithfully — and the existing convention turned out to be the vulnerability.
-Lessons can be wrong, so they now carry a status (`CHALLENGED` / `CORRECTED` /
-`SUPERSEDED` / `RETIRED`) and can be corrected without erasing history.
+## Experience Base
 
-### The experience base
+Two different cuts of the same body of knowledge. They are **not** two pools to
+be added together.
 
-Two different cuts of the same body of knowledge — both accurate, and not meant
-to be added together:
+**Origin**
 
-| Axis | Figure |
-|---|---|
-| **Origin** | 111 seeded from the incident history of one real production website, plus 7 learned through live dogfooding — **118 total** |
-| **Evidence** | 116 grounded in real operations, 2 explicitly marked as general practice |
+```
+111  seeded from one production website's incident history
+  7  learned through live dogfooding
+───
+118  total
+```
 
-> **118 lessons, 116 grounded in real operations and 2 explicitly marked as
-> general practice — each mapped to the rule that enforces it.**
+**Evidence**
 
-Evidence strength is marked `[REAL]` (real incident), `[DERIVED]` (inferred from
-real evidence) or `[GENERAL]` (general best practice, limited first-party
-evidence) at rule level throughout `references/`. The lesson-to-enforcement-point
-map is in `docs/experience-mapping.md`; the seven learned-in-the-wild lessons each
-carry their provenance in `docs/experience-log.md`.
+```
+116  grounded in real operations
+  2  explicitly marked GENERAL (general practice, no first-party evidence)
+───
+118  total
+```
+
+Evidence strength is marked `[REAL]` / `[DERIVED]` / `[GENERAL]` at rule level
+throughout `references/`. The lesson-to-enforcement-point map is in
+[`docs/experience-mapping.md`](docs/experience-mapping.md); the seven
+learned-in-the-wild lessons carry their provenance in
+[`docs/experience-log.md`](docs/experience-log.md).
 
 The intent is **depth before breadth**: long-horizon extraction from a site
 actually operated over time, rather than assembling a generic operations
