@@ -42,6 +42,83 @@ current records are unknown (SKILL.md §7.8).
 | HTTP → HTTPS | Plain HTTP redirects to HTTPS, with no redirect loop |
 | Renewal method | How renewal happens — panel auto-renew, ACME client, manual? Document it |
 
+## 3b. Decide expiry on absolute timestamps, never on derived days [REAL]
+
+Comparing timestamps via an integer day count silently erases the most
+important state there is — "already expired".
+
+Real bug, real output:
+
+```
+remaining_seconds = -5218        # certificate expired 87 minutes ago
+days = -5218 / 86400 = 0         # integer division truncates toward zero
+→ "certificate expires in 0 days" → WARNING → overall PASS
+```
+
+The certificate was dead. The check said "0 days". Every browser was already
+blocking the site.
+
+Correct order of operations — always in this sequence:
+
+```
+1. read expiry timestamp (epoch)        expiry_ts
+2. read now (epoch)                     now_ts
+3. DECIDE:  expiry_ts <= now_ts  →  EXPIRED (fail)
+            else compare seconds to thresholds
+4. only then format seconds → hours → days for humans
+```
+
+State model that follows from it:
+
+| State | Condition | Verdict |
+|---|---|---|
+| `EXPIRED` | `expiry_ts <= now_ts` | FAIL — no grace, no rounding |
+| `NOT_YET_VALID` | `not_before > now_ts` | FAIL |
+| `CRITICAL` | remaining < 24h (configurable) | FAIL or CRITICAL — renewal is overdue in practice |
+| `WARNING` | remaining < renewal window (e.g. 21d) | WARN |
+| `HEALTHY` | remaining >= window | PASS |
+
+This is not a TLS-specific trick. The general rule:
+
+> **Compare absolute timestamps before deriving human-readable durations.**
+> A rounded duration is a display artifact, never a decision input. (EXP-113)
+
+The same bug class hides in: session/token TTL checks, "days since last
+backup", retry-window math, subscription expiry, and cache-age comparisons.
+Anywhere the code computes `(a - b) / 86400` and then compares to `0`, a
+sub-day negative value becomes zero.
+
+## 3c. Certificate renewed ≠ certificate served [REAL]
+
+Renewing a certificate on disk does not mean visitors receive it. Between the
+new file and the browser sit several layers that each cache or terminate TLS:
+
+```
+certificate file renewed
+  → does the running process need a reload/restart?
+  → is a reverse proxy terminating TLS?
+  → is a CDN terminating TLS (and still holding the old cert)?
+  → is there a load balancer with its own copy?
+  → are there multiple nodes, some not yet updated?
+  → is an old process still bound to :443?
+  → does DNS point somewhere unexpected?
+  → what certificate does the PUBLIC endpoint actually present?
+```
+
+The only proof is the certificate a user receives, read from outside:
+
+```bash
+openssl s_client -servername <host> -connect <host>:443 </dev/null 2>/dev/null   | openssl x509 -noout -subject -dates -fingerprint -sha256
+```
+
+Repeat the sample a few times (different connections can hit different nodes)
+and compare fingerprints — identical fingerprints mean one consistent
+certificate is being served; differing fingerprints mean an inconsistent
+fleet.
+
+> Verify the certificate from the user's path, not only from the server
+> filesystem. (EXP-118)
+
 ## 4. Certificate expiry ledger [REAL for the practice / GENERAL for mechanics]
 
 The one first-party fact: certificates were issued through a hosting panel, and

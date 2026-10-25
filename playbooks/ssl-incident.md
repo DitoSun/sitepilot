@@ -32,6 +32,41 @@
 - [ ] Back up the current (even if broken) config before making changes, preserving the fallback path. [GENERAL]
 - [ ] Redirect lost: restore reverse proxy / app layer redirect rules, verify the 301 target is correct. [GENERAL]
 
+## PATH: Certificate renewed, but visitors still get the old one
+
+A distinct failure mode from "certificate expired": the renewal succeeded and
+the server has a valid file, yet the public endpoint still presents the old
+certificate. Do not re-issue certificates in a loop — locate the layer.
+
+Work through these in order, read-only first:
+
+| # | Layer | Check | Finding means |
+|---|---|---|---|
+| 1 | File | `openssl x509 -in <cert> -noout -dates` | The file on disk is new |
+| 2 | Process | Is the TLS terminator running the new config? Was it reloaded/restarted after renewal? | Renewal without reload = old cert still served |
+| 3 | Reverse proxy | Does nginx/apache terminate TLS? Did it reload? | `nginx -T` shows the cert path actually loaded |
+| 4 | CDN | Does a CDN terminate TLS with its own certificate? | A CDN cert must be renewed at the CDN, not on the server |
+| 5 | Load balancer | Does an LB hold its own certificate copy? | Renewing the origin does nothing for the LB |
+| 6 | Multiple nodes | Are all nodes updated? Is the sample hitting an old one? | Inconsistent fleet — sample several times |
+| 7 | Old process | Is a stale process still bound to :443? | New file, old listener |
+| 8 | DNS | Does the hostname resolve where you think? | You may be checking a different server than users reach |
+
+**Proof of recovery is external, not local.** Read the certificate from
+outside, over the public hostname, and compare fingerprints across several
+samples:
+
+```bash
+openssl s_client -servername <host> -connect <host>:443 </dev/null 2>/dev/null \
+  | openssl x509 -noout -dates -fingerprint -sha256
+```
+
+Then confirm the user-visible outcome: HTTPS loads with no browser warning, the
+expiry is in the future, and HTTP still redirects to HTTPS.
+
+> Action completed ≠ recovery verified. The certificate file being new is an
+> internal fact; the certificate a visitor receives is the only outcome that
+> matters. (EXP-118)
+
 ## VERIFY
 
 - [ ] Verify every domain one by one: chain complete, expiry date, hostname match, HTTP→HTTPS redirect in place. [GENERAL]

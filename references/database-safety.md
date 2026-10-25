@@ -67,6 +67,36 @@ Backup as the unified entry point of the write layer: new write points (new feat
 | Separate data/code deploys must come with a sync health check | Incident: local and production counts inconsistent, users couldn't see new content. You need a per-file comparison tool (decidable by exit code), plus a deploy-package guard against data riding along | [REAL] EXP-015 |
 | Keep data-change serialization stable | One reformat/reorder creates a giant diff; bulk data changes are committed separately with provenance recorded | [REAL] EXP-017 |
 
+## Do not assume the direction of divergence [REAL]
+
+The reflexive assumption is "local/dev copy is older, production is ahead."
+It is wrong often enough to be dangerous.
+
+A real case: the local user table held **more** rows than production
+(7,539 vs ~6,447). Anyone acting on "local is a subset, I can top production
+up" would have pushed test records and resurrected deleted accounts into the
+authoritative store.
+
+Before any reconciliation, establish — from evidence, not expectation:
+
+| Question | Why it matters |
+|---|---|
+| Which store is the source of truth? | Determines which side may be written |
+| What is the write path? Who writes, from where? | Multiple writers explain divergence better than "staleness" |
+| What do timestamps say? | Direction of travel, if timestamps are trustworthy |
+| Which side is more complete, and in which dimension? | "More rows" ≠ "more correct"; rows can be test data |
+| Is there a replication direction already? | A reverse sync may be undoing your work |
+
+Then choose: forward-apply, back-apply, merge with an explicit rule, or **do
+nothing and investigate**. "Do nothing" is a legitimate outcome.
+
+Never reconcile by row count alone. Counts can match while content differs,
+and can differ while both sides are correct for their purpose.
+
+> When two sources disagree, establish source of truth, write path, timestamps,
+> completeness, and replication direction — before choosing a direction.
+> (EXP-116)
+
 ## Agent Quick Check
 
 - Do I know which data I am modifying? Is it the authoritative copy? (Can't answer → stop)

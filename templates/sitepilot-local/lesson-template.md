@@ -5,6 +5,9 @@
   Unexpected behavior / Rollback / Security finding / Data integrity issue /
   Silent failure / Repeated problem / User correction / Better method found)
 - **Status:** CANDIDATE | CONFIRMED LOCAL | GENERALIZABLE | PROMOTED
+  | CHALLENGED | CORRECTED | SUPERSEDED | RETIRED
+- **Superseded By:** (when SUPERSEDED/CORRECTED) the lesson that replaced it
+- **Superseded Reason:** (when SUPERSEDED/CORRECTED) what the new evidence showed
 
 ## Problem
 ## Context
@@ -54,3 +57,9 @@ CLEAN | NEEDS REVIEW
 ## Related
 - Local lessons:
 - SitePilot modules:
+
+## If this lesson turns out to be wrong
+Do not delete it. Flip **Status** to `SUPERSEDED` (or `CORRECTED` if only the
+wording was dangerous), fill **Superseded By** / **Superseded Reason**, and fix
+everywhere the old guidance already spread. See
+`references/experience-loop.md` §3 and §8b.

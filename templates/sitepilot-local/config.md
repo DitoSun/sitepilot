@@ -11,5 +11,9 @@
 - Deployment window / freeze periods:
 - Notification channel for incidents (name only — never credentials):
 
+## Health check thresholds
+- Certificate warning window (days): 21   # SITEPILOT_TLS_WARN_DAYS
+- Certificate critical window (hours): 24  # SITEPILOT_TLS_CRITICAL_HOURS
+
 ## Local overrides
 (any SitePilot default deliberately adjusted for this site, and why)

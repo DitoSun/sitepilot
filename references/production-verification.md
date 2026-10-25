@@ -70,6 +70,27 @@ exercised without persisting anything into real data files. Verifying "does
 the button work" by clicking it against live data is how test artifacts become
 production incidents. (EXP-110)
 
+## Verify from the user's path, not from the server [REAL]
+
+"Production verification" means verifying what a user receives — which is not
+the same as what the server holds.
+
+Two failure shapes that pass local checks and fail users:
+
+| Local check says | Users may still get |
+|---|---|
+| Certificate file renewed on disk | The old certificate, because the proxy was never reloaded, or a CDN / load balancer still holds the old one |
+| App responds on `localhost:3000` | A 5xx from the public edge, a cache hit serving a previous build, or a TLS error before the request ever reaches the app |
+
+So: run at least one verification from outside the server, over the public
+hostname, including TLS. If local and public disagree, **public wins** — and
+the difference is itself a finding.
+
+Also record the vantage point of every verification: a check that fails from
+one network and passes from another has not established "the site is down";
+it has established "this path is broken". See `references/monitoring.md`.
+(EXP-117)
+
 ## Agent Quick Check
 
 - Did I actually visit the production site, or only look at build/deploy output?

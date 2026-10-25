@@ -57,10 +57,16 @@ Candidate** only when at least one of these occurred:
 
 ## 3. Lesson Status Lifecycle
 
-One incident ≠ one universal rule. Lessons mature through states:
+One incident ≠ one universal rule. Lessons mature through states — and they
+can also be **wrong**:
 
 ```
-CANDIDATE → CONFIRMED LOCAL → GENERALIZABLE → PROMOTED
+                    ┌──────────── CORRECTED ────────────┐
+                    │                                   │
+CANDIDATE → CONFIRMED LOCAL → GENERALIZABLE → PROMOTED ─┴─→ CHALLENGED
+                                                              │
+                                          ┌───────────────────┼───────────────────┐
+                                     CORRECTED           SUPERSEDED           RETIRED
 ```
 
 | Status | Meaning | Allowed use |
@@ -69,8 +75,74 @@ CANDIDATE → CONFIRMED LOCAL → GENERALIZABLE → PROMOTED
 | **CONFIRMED LOCAL** | Verified true for this project | Guide work on this project |
 | **GENERALIZABLE** | Reason to believe other websites are affected | Propose for upstream; may inform advice with stated confidence |
 | **PROMOTED** | Accepted into SitePilot core | Enforced as a rule / checklist / playbook / recipe / check |
+| **CHALLENGED** | New evidence disputes it; under review | Demote: mention with an explicit caveat, never enforce |
+| **CORRECTED** | The lesson was directionally right but badly worded or over-broad; a corrected version replaces it | Use the corrected version; keep the original for history |
+| **SUPERSEDED** | A newer lesson contradicts it and wins | **Never** use as active guidance; point to the superseding ID |
+| **RETIRED** | No longer applicable (feature removed, stack changed, risk obsolete) | Never use; keep for history |
 
 This prevents an agent from learning a **wrong rule from one coincidence**.
+
+### Lessons themselves can be wrong
+
+A lesson is guidance backed by evidence — **not immutable truth**. The
+clearest real example: a past lesson said *"new admin endpoints must copy the
+existing cookie convention from current production code."* An audit later
+found the existing convention was itself the vulnerability — the lesson had
+been faithfully teaching the bug forward for months, and three new endpoints
+had copied it (see EXP-114).
+
+Two things follow:
+
+1. **A lesson that says "copy what exists" is a red flag** unless it also says
+   "after verifying that what exists is correct."
+2. **Corrections must be as durable as the original.** If a wrong lesson can
+   only be fixed by editing a file nobody re-reads, it will keep propagating.
+   Give it a status, a reason, and a successor.
+
+### Knowledge should be correctable without erasing history
+
+Never delete a superseded lesson. Record it as `SUPERSEDED`, with:
+
+- **Reason** — what the new evidence showed
+- **Superseded By** — the lesson/EXP ID that replaced it
+- **Date** — when it was superseded
+
+This is how anyone can later answer *"why does SitePilot behave differently
+than it used to?"* — a question that erased history can never answer.
+
+### Conflicting lessons: resolve, do not pick at random
+
+When two active lessons conflict, compare:
+
+| Dimension | Question |
+|---|---|
+| Evidence | Which one is backed by stronger, more direct evidence? |
+| Recency | Which reflects the current system (not a previous architecture)? |
+| Scope | Which one actually covers this situation? |
+| Confidence | HIGH / MEDIUM / LOW — and why? |
+| Security implications | Which choice is safer if wrong? |
+| Supersession status | Is one already superseded or retired? |
+
+If the conflict cannot be resolved with evidence: **do not silently choose.**
+Treat the guidance as `CHALLENGED`, apply the safer reading for the current
+action, and record the open question.
+
+### Local lessons expire too
+
+`.sitepilot/` lessons are not permanent truth either. Server migrations, deploy
+mechanism changes, auth rewrites, and CDN changes all invalidate local facts.
+Local lesson statuses use the same vocabulary:
+
+| Status | Meaning |
+|---|---|
+| `ACTIVE` | Currently true; safe to rely on |
+| `CHALLENGED` | Something contradicts it; verify before relying |
+| `SUPERSEDED` | Replaced by a newer local lesson |
+| `RETIRED` | No longer applicable |
+
+Any task that observes behavior contradicting an `ACTIVE` local lesson must
+flip it to `CHALLENGED` and record the observation — that is the whole point
+of having a lifecycle.
 
 ---
 
@@ -103,6 +175,9 @@ Evidence               why this lesson is believed (file, log, command output �
 Confidence             HIGH / MEDIUM / LOW
 Privacy Status         CLEAN / NEEDS REVIEW (contains private details?)
 Status                 CANDIDATE / CONFIRMED LOCAL / GENERALIZABLE / PROMOTED
+                       / CHALLENGED / CORRECTED / SUPERSEDED / RETIRED
+Superseded By          (when SUPERSEDED/CORRECTED) the ID that replaced it
+Superseded Reason      (when SUPERSEDED/CORRECTED) what the new evidence showed
 Related Rules          SKILL.md sections this affects
 Related Playbooks      playbooks to update
 Related Checklists     checklists to update
@@ -198,6 +273,40 @@ A lesson that only sits in a file prevents nothing. Value ladder:
 Prefer pushing lessons **from documentation toward prevention**. Every
 automated check must still be SAFE BY DEFAULT (read-only, timeout, no secret
 logging, no destructive side effects).
+
+---
+
+## 8b. Correcting a Wrong Lesson
+
+When new evidence contradicts an active lesson:
+
+1. **Always check existing active guidance before acting on it.** "The skill
+   says so" is not evidence — the skill may be behind reality.
+2. **Verify against reality**, not against other documentation. Run it, read
+   the code, observe the behavior.
+3. **Write a correction record** — do not overwrite the original text:
+
+```
+ID               LC-<n>  (lesson correction)
+Corrects         <original lesson ID / EXP-ID>
+Date             YYYY-MM-DD
+New Evidence     what was observed, and how
+Why Old Was Wrong the specific faulty assumption
+Corrected Guidance the wording that should replace it
+Status           CORRECTED | SUPERSEDED
+Supersedes Scope which parts are replaced (all? one clause?)
+Propagation      where the wrong guidance had already been copied
+```
+
+4. **Mark the original** `SUPERSEDED` (or `CORRECTED` if the intent survives
+   but the wording was dangerous), and keep it in place.
+5. **Fix the propagation.** A wrong lesson usually already spread. Search for
+   copies (other files, other projects, other endpoints) and correct each —
+   `Fix one instance, scan the class` applies to lessons too.
+6. **Add a regression check** if the wrong lesson can be detected mechanically.
+
+> The most dangerous lesson is one that is confidently worded, widely copied,
+> and subtly wrong. Corrections exist for exactly that case.
 
 ---
 

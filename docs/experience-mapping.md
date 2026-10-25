@@ -127,17 +127,35 @@ Legend: **S** = SKILL.md rule · **R** = reference · **C** = checklist ·
 | EXP-110 | Local verification must not touch production data | R production-verification, C database-change |
 | EXP-111 | Periodic full-site sweeps catch site-wide noise | R monitoring, A site-health-check.sh |
 
+## Post-v1.0.0 additions (EXP-112 … EXP-118)
+
+Learned after the first real-world dogfooding run. Full detail:
+`docs/experience-log.md`. Provenance: `REAL-WORLD DOGFOODING` = SitePilot's own
+defect; `LOCAL INCIDENT` = observed on a specific production site.
+
+| Lesson | Provenance | Title | Implemented in |
+|---|---|---|---|
+| EXP-112 | REAL-WORLD DOGFOODING | A health check must prove its failure paths fail | S §3.15, S §10 (DoD), R monitoring, A `scripts/tests/health-check-regression.sh` |
+| EXP-113 | REAL-WORLD DOGFOODING | Compare absolute timestamps before deriving durations | R dns-domain-ssl §3b, A (TLS expiry logic) |
+| EXP-114 | REAL-WORLD DOGFOODING | Existing code is evidence, not proof of correctness | S §3.14, R security §10, R experience-loop §3 |
+| EXP-115 | REAL-WORLD DOGFOODING | Security-sensitive fallbacks must fail closed | R security §11 |
+| EXP-116 | LOCAL INCIDENT | Do not assume the direction of data divergence | R database-safety |
+| EXP-117 | LOCAL INCIDENT | Health is path-dependent | S §3.16, R monitoring, R production-verification |
+| EXP-118 | REAL-WORLD DOGFOODING | "Renewed" is not "served": verify TLS from the user's path | S §3.16, R dns-domain-ssl §3c, P ssl-incident |
+
 ## Coverage summary
 
 | Metric | Count |
 |---|---|
-| Lessons mined (deduplicated) | 111 |
-| Mapped to at least one skill component | 111 (100%) |
+| Lessons mined during Phase 1 (v1.0.0) | 111 |
+| Lessons added after v1.0.0 dogfooding | 7 (EXP-112 … EXP-118) |
+| **Total lessons in the skill** | **118** |
+| Mapped to at least one skill component | 118 (100%) |
 | Universal (A) lessons driving core rules | 60 |
 | Broadly-applicable (B) lessons in references | 38 |
 | Stack-specific (C) lessons in recipes | 13 |
 | Project-specific (D) lessons excluded from public core | 5 |
-| Automated as read-only checks | 1 script covering EXP-111 + transport-level EXP-025/038/067/076 signals |
+| Automated as read-only checks | `site-health-check.sh` (EXP-111 + transport/TLS/redirect/header signals) and `tests/health-check-regression.sh` (EXP-112, EXP-113) |
 
 The full evidence-level audit (source commits, notes, and file traces per
 lesson) is maintained privately by the project owner and is intentionally not

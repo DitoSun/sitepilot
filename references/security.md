@@ -103,7 +103,79 @@ accounts without a bound email were locked out entirely (EXP-056, L10).
 
 ---
 
-## History rewrites must be verified, not assumed [REAL]
+## 10. Existing code is evidence, not proof of correctness [REAL]
+
+A real pattern: a project's own operational notes said *"new admin endpoints
+must copy the existing cookie convention used in production."* Three endpoints
+were written that way — faithfully copying a convention that turned out to be
+the vulnerability itself (a fixed cookie value compared as a session check).
+
+`Read before write` and `Search before create` prevent duplicate work. They do
+**not** imply that the existing implementation is safe. Separate the two ideas:
+
+| Goal | Correct action |
+|---|---|
+| Don't reinvent a feature | Find and reuse the existing implementation |
+| Don't inherit a vulnerability | Review the existing implementation's security properties **before** copying it |
+
+Rules:
+
+1. **Reuse the pattern only after validating its assumptions.** What does it
+   assume about trust, input, storage, and identity? Are those assumptions
+   still true here?
+2. **Never copy security-sensitive code by example.** For authentication,
+   authorization, identity, secrets, database access, trust boundaries, and
+   any security control: read the implementation, state what it actually
+   verifies, and only then reuse — or better, extract one shared module and
+   delete the copies.
+3. **"The site has always worked this way" is not a security argument.**
+   Working ≠ secure. A bypassed check works perfectly for everyone.
+4. **Count the copies.** If the same check exists in 3+ files, the copies are
+   drifting, and at least one is probably wrong. One implementation, imported.
+5. **Existing code is also a signal about the team's intent** — but intent is
+   not implementation. Verify what the code *does*, not what it was meant to do.
+
+> Reuse patterns only after validating their assumptions and security
+> properties. (EXP-114)
+
+## 11. Security-sensitive fallbacks must fail closed [REAL]
+
+A fallback is a resilience technique. In security-sensitive paths it is
+usually a hazard, because it converts "misconfigured" into "silently running
+on a guess."
+
+The dangerous shape:
+
+```js
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "some-literal";
+```
+
+If the variable is not set, the system does **not** fail — it accepts a
+password that lives in the source code, in git history, and in every clone.
+It looks healthy. It even logs in. That is worse than an outage.
+
+Use this decision rule:
+
+| Situation | Correct behavior |
+|---|---|
+| Non-security default (timeout, page size, locale, retry count) | A sensible fallback is fine |
+| Security-sensitive value (password, key, token, secret, signing key, admin credential) | **Fail closed.** Refuse to start the feature, or refuse the operation, with a loud, explicit error |
+| Security-sensitive value with an "obviously local" default | Still fail closed — "just for dev" defaults ship to production |
+| Degraded-but-safe mode exists (e.g. disable the feature, not the check) | Prefer disabling the protected capability over weakening the check |
+
+Two supporting practices:
+
+- **Check configuration at startup, not at first use.** A missing admin
+  credential should fail at boot with a clear message, not at 3am on first
+  login attempt.
+- **Do not let the error message reveal the expected value.** Report the
+  missing variable name, never a default.
+
+Not every fallback is dangerous. The rule is narrower than "all fallbacks are
+bad": *if the fallback supplies a secret or bypasses a security decision, it
+must fail closed instead.* (EXP-115)
+
+## 12. History rewrites must be verified, not assumed [REAL]
 
 After rewriting git history to purge leaked data (`filter-repo` /
 `filter-branch`), verify what was actually removed with a full tree listing
@@ -112,7 +184,7 @@ other sensitive files (personal notes, configs, smaller data files) in place,
 pushed and public. Removed from the index ≠ removed from every clone.
 (EXP-008)
 
-## Anti-scraping is graded, not absolute [REAL]
+## 13. Anti-scraping is graded, not absolute [REAL]
 
 A mature anti-scrape posture is layered (UA screening → browser fingerprints
 → signed tokens → tiered rate limits) with the philosophy of making scraping

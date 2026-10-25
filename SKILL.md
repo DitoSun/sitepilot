@@ -90,6 +90,19 @@ Load the matching module **before acting**, not after:
     item, playbook path, or automated check — see §9. **[REAL]**
 13. **Remember the lesson, forget the secret.** Never copy credentials, tokens,
     user data, IPs, or private infrastructure into any output. **[REAL]**
+14. **Existing code is evidence, not proof of correctness.** Read before write
+    and search before create prevent duplicate work — they do not certify the
+    existing implementation. Before reusing a pattern, verify its assumptions;
+    for auth, identity, secrets, and any security control, never copy by
+    example. **[REAL]**
+15. **A check that has not demonstrated its failure paths cannot be trusted.**
+    If you write or rely on an automated check, prove that it fails when it
+    should fail — and that its printed verdict matches its exit code.
+    Monitoring must be monitored. **[REAL]**
+16. **Verify from the user's path.** Local, server-side, and public-path checks
+    answer different questions. A renewed certificate, a running process, or a
+    passing localhost request proves nothing about what a visitor receives.
+    **[REAL]**
 
 ---
 
@@ -187,6 +200,10 @@ After any deploy or change, check **meaning**, not just reachability:
 
 **A 200 response with silently wrong data is an incident, not a success.**
 
+And verify from where the user stands: `localhost` up ≠ public endpoint correct;
+certificate file renewed ≠ certificate served. When local and public disagree,
+public wins — and the difference is a finding. **[REAL]**
+
 ---
 
 ## 9. THE SELF-IMPROVING EXPERIENCE LOOP
@@ -216,6 +233,14 @@ failure · a repeated problem · a user correction · a better method found?
 **Recurrence rule:** if a problem repeats, the earlier lesson failed to prevent
 it. Escalate it: documentation → checklist → automation → guardrail.
 
+**Lessons can be wrong.** Guidance in this skill is evidence-backed, not
+truth. Statuses `CHALLENGED` / `CORRECTED` / `SUPERSEDED` / `RETIRED` exist so a
+bad lesson can be corrected **without erasing history** — never delete a
+superseded lesson, mark it and point to its successor. If reality contradicts
+an active lesson, the lesson loses: record the contradiction, mark the lesson,
+and fix everywhere the old wording had already propagated. Full mechanism:
+`references/experience-loop.md` §3 and §8b. 
+
 ---
 
 ## 10. DEFINITION OF DONE
@@ -224,8 +249,9 @@ A website task is done only when ALL are true:
 
 ```
 Implemented + tested + built + deployed
-+ production verified (semantics, not just status)
++ production verified (semantics, not just status, from the user's path)
 + regression checked + monitored
++ any new automated check proven to fail on failing input
 + lesson captured if there was anything to learn
 ```
 
@@ -258,6 +284,7 @@ Implemented + tested + built + deployed
 | Stack-specific traps | `recipes/` |
 | Worked examples of agent reasoning | `examples/` |
 | Read-only site health check | `scripts/site-health-check.sh` |
+| Proving the health check actually fails when it should | `scripts/tests/health-check-regression.sh` |
 | Starting a local experience store | `templates/sitepilot-local/` |
 
 ---

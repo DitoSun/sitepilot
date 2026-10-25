@@ -1,7 +1,113 @@
 # SitePilot v1 — Validation Report
 
+Date: 2026-10-25 · Scope: **v1.0.1** (supersedes the v1.0.0 report below) ·
+Method: scenario walkthroughs against SKILL.md decision logic, a live test of
+`scripts/site-health-check.sh`, and a **negative-path regression suite**.
+
+> **Read this first.** v1.0.0 shipped with two silent false-pass bugs in its only
+> automated tool — the health check reported `PASS` for an unreachable site and
+> for a certificate that had expired 87 minutes earlier. Both are fixed in
+> v1.0.1, and the fix is backed by a regression suite that proves the failure
+> paths fail. The v1.0.0 section below is kept as history, not as current claims.
+
+---
+
+## v1.0.1 — Negative-path validation (the important part)
+
+### Why this section exists
+
+The v1.0.0 report below described a successful live test of the health check.
+That test was real and it passed — **and it proved nothing about failure
+handling**, because every case it exercised was a healthy site. The first
+real-world run then produced two false "healthy" verdicts.
+
+This is EXP-112 in practice: *a check that has not demonstrated that its failure
+paths fail cannot be trusted.*
+
+### Suite
+
+`scripts/tests/health-check-regression.sh` — 19 assertions, no external network
+required, fixtures generated locally (throwaway HTTP/TLS servers, certificates
+with controlled `notBefore`/`notAfter`).
+
+```
+$ ./scripts/tests/health-check-regression.sh
+ PASSED: 19   FAILED: 0   SKIPPED: 0
+ RESULT: ALL CASES PASSED      (exit 0)
+```
+
+### HTTP matrix — 9/9
+
+| Scenario | Expected | Actual |
+|---|---|---|
+| Fully healthy fixture (200 + security headers + crawler assets) | PASS, exit 0 | PASS, exit 0 |
+| 200 but missing security headers | PASS WITH WARNINGS, exit 3 | exit 3 |
+| 301 redirect | PASS WITH WARNINGS, exit 3 | exit 3 |
+| 404 | FAIL, exit 1 | exit 1 |
+| 500 | FAIL, exit 1 | exit 1 |
+| **DNS failure** | FAIL, exit 1 | exit 1 |
+| **Connection refused** | FAIL, exit 1 | exit 1 |
+| **Timeout** (accepts, never answers) | FAIL, exit 1 | exit 1 |
+| **TLS handshake failure** (https → plain port) | FAIL, exit 1 | exit 1 |
+
+### TLS matrix — 8/8
+
+Certificates generated with exact `notAfter` offsets from the current time.
+
+| Scenario | Certificate state | Expected | Actual |
+|---|---|---|---|
+| +90 days | HEALTHY | message "valid for 8x more days"; no `EXPIRED` | ✔ |
+| +10 days | WARNING | "renewal window"; no `EXPIRED` | ✔ |
+| +2 hours | CRITICAL | "expires in 1h" → failure | ✔ |
+| **−1 second** | EXPIRED | **FAIL**, message in seconds | ✔ `EXPIRED 1s ago` |
+| **−3 hours** | EXPIRED | **FAIL**, message in hours | ✔ `EXPIRED 2h/3h ago` |
+| **−5 days** | EXPIRED | **FAIL**, message in days | ✔ `EXPIRED 4d/5d ago` |
+| Wrong hostname | valid dates, wrong CN | **FAIL**, "does NOT match" | ✔ |
+| No certificate served | — | **FAIL** | ✔ |
+
+The three "expired" rows are the direct regression guard for the v1.0.0 bug:
+none of them may ever report `0 days`, and all must exit non-zero.
+
+### Verdict ↔ exit-code integrity — 2/2
+
+| Check | Result |
+|---|---|
+| Printed verdict agrees with exit code across PASS / FAIL / PASS-WITH-WARNINGS | ✔ (3 spot checks) |
+| `--json` mode still returns exit 1 on FAIL | ✔ |
+
+Exit-code contract, verified directly: clean pass → `0`; failure → `1`;
+warnings only → `3`; usage error → `2`.
+
+### Honest limitation (NOT automated)
+
+**"Overall PASS with a trusted certificate" is not covered by the suite.**
+Self-signed fixtures are rejected by `curl`, so the transport check legitimately
+fails regardless of the certificate's dates. What the suite proves is the TLS
+*date classification* — which is where the bug was.
+
+That path was verified manually against a real site instead:
+
+| Check | Result |
+|---|---|
+| Real certificate served from the public endpoint | valid, 89 days remaining |
+| Browser-equivalent chain validation (`ssl_verify_result`) | `0` (trusted) |
+| Hostname match | ✔ |
+| Critical paths (`/`, `/loadouts`, `/weapons`, `/rankings`) | 200 |
+| HTTP → HTTPS | 301 to `https://` |
+| Overall verdict | exit 3 (PASS WITH WARNINGS — local trust store lags the new root) |
+
+Marked **NOT VERIFIED AUTOMATICALLY** rather than claimed.
+
+---
+
+## v1.0.0 — Original report (kept as history)
+
 Date: 2026-10-25 · Scope: v1.0.0 · Method: scenario walkthroughs against
 SKILL.md decision logic + live test of `scripts/site-health-check.sh`.
+
+> ⚠️ The automation result recorded in this section was produced by a tool that
+> later proved to give false PASS verdicts on failing input. The *scenario*
+> results stand; the tool's PASS output does not. See the v1.0.1 section above.
 
 Each scenario was walked through the skill's routing and decision rules. The
 checks below are the acceptance criteria from the project plan.
