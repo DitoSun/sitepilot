@@ -1,0 +1,10 @@
+# Normalize line endings so the repo behaves identically on every platform.
+# (SitePilot's own lesson EXP-108: text and binary need different checksum rules.)
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.md   text eol=lf
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.zip  binary
