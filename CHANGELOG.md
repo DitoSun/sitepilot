@@ -27,6 +27,15 @@ false "healthy" verdicts during its first real-world dogfooding run.
 - **TLS inspection assumed port 443.** Non-standard ports produced a
   misleading "could not read certificate" reason. Host and port are now parsed
   from the target URL.
+- **Chain failure could be misattributed to the target.** An untrusted-chain
+  reading was reported as a generic local warning, which a reader could take to
+  mean "the site's certificate chain is broken". The distinction is now made
+  explicitly, using evidence already available at that point:
+  - request completed, but openssl could not validate → **`tls-environment`**:
+    a checker-environment trust issue, explicitly *not* a target problem.
+  - request did not complete either → **`tls`**: a target-side TLS/chain issue.
+  (`%{ssl_verify_result}` is deliberately not used as the signal: it reads `0`
+  even when no response was produced.)
 
 ### Added
 - **Negative-path regression suite** (`scripts/tests/health-check-regression.sh`).

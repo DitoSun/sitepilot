@@ -116,6 +116,54 @@ With SitePilot, the agent:
 3. Traces the real cause (expired token → soft-degraded response path)
 4. Verifies semantically after the fix, and captures a **Lesson Candidate** locally
 
+## Learned in the Wild
+
+SitePilot has been used on a real production website. On the very first run, it
+audited the site, then turned around and caught **its own** health checker
+shipping two silent-failure bugs:
+
+- a target that could not be reached at all was reported as **healthy**
+  (`000` + a `|| echo 000` fallback concatenated into a string that matched no
+  failure branch)
+- an expired TLS certificate was rounded into a **non-failing** state
+  (`-5218` seconds truncated to `0` days → "expires in 0 days" → pass)
+
+Neither was findable by happy-path testing, because on a healthy site the output
+is correct. They were found by using the tool where it mattered.
+
+What followed is the loop the skill is built around:
+
+```
+incident → root cause → lesson → generalization
+→ fix → negative-path regression tests → v1.0.1
+```
+
+The fixes came with a 20-case suite that proves the failure paths fail — expired
+1 second ago, expired 3 hours ago, expired 5 days ago, wrong hostname, no
+certificate, connection refused, DNS failure, timeout, handshake failure — and
+that the printed verdict always agrees with the exit code.
+
+That episode also produced the two principles this project is least likely to
+trade away:
+
+> A check that has not demonstrated that its failure paths fail cannot be
+> trusted.
+
+> Monitoring software that converts failure into success creates false
+> confidence, and may be more dangerous than having no check at all.
+
+It also taught a lesson about lessons: an earlier operational note said *"new
+admin endpoints must copy the existing convention from production code."* Three
+endpoints followed it faithfully — and the existing convention turned out to be
+the vulnerability. So lessons can be wrong, and they now carry a status
+(`CHALLENGED` / `CORRECTED` / `SUPERSEDED` / `RETIRED`) so they can be corrected
+without erasing history.
+
+**Experience base:** 111 seeded lessons mined from real incident history, plus
+7 learned in the wild — 118 total, every one mapped to the rule, reference,
+checklist, playbook, recipe or automated check that enforces it
+(`docs/experience-mapping.md`).
+
 ## Safety
 
 SitePilot is designed for production:

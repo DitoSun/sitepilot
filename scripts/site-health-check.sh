@@ -273,12 +273,27 @@ else
         *) note "Hostname match not verified (openssl -checkhost unavailable)" ;;
       esac
 
-      # Chain trust: WARN, not FAIL — local trust stores lag new roots, so an
-      # untrusted-chain reading here is not proof of a broken site.
+      # Chain trust. Two different situations can produce an "untrusted chain"
+      # reading, and they must not be conflated:
+      #   (a) the TARGET serves a chain that genuinely does not validate
+      #   (b) THIS MACHINE's openssl trust store is behind the system bundle
+      # Evidence to tell them apart is already available: curl verified the
+      # chain against the system CA bundle during the probe. If curl trusts it
+      # and openssl does not, the discrepancy is local to the checker.
       VERIFY=$(printf '%s' "$CERT" | grep -E '^Verify return code' | head -1 || true)
       case "$VERIFY" in
         *"code: 0"*|"") : ;;
-        *) record WARN "tls" "Chain not validated locally (${VERIFY#*: }) — confirm from an external network before concluding a chain problem" ;;
+        *)
+          # Evidence rule: if the request completed successfully, the system CA
+          # bundle DID accept this chain, so a disagreement can only be local to
+          # this machine's openssl store. If the request failed at the TLS layer,
+          # the target is the more likely cause.
+          if [ "$P_EXIT" -eq 0 ] && [ -n "$P_CODE" ]; then
+            record WARN "tls-environment" "CHECKER ENVIRONMENT trust issue, NOT a target certificate problem: this machine's openssl trust store cannot validate the chain (${VERIFY#*: }), yet the request completed successfully against the system CA bundle. Check from another network or update this machine's CA bundle — do not conclude the site's chain is broken."
+          else
+            record WARN "tls" "Chain did not validate (${VERIFY#*: }) and the request did not complete either — treat as a target-side TLS/chain issue and confirm from an external network."
+          fi
+          ;;
       esac
     fi
   fi

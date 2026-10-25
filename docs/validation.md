@@ -78,6 +78,27 @@ none of them may ever report `0 days`, and all must exit non-zero.
 Exit-code contract, verified directly: clean pass → `0`; failure → `1`;
 warnings only → `3`; usage error → `2`.
 
+### Chain classification — target vs checker environment
+
+An untrusted-chain reading has two possible causes, and conflating them makes a
+healthy site look broken:
+
+| Situation | Evidence | Reported as |
+|---|---|---|
+| Request completed, but this machine's openssl store cannot validate the chain | transport succeeded → the system CA bundle accepted it | `[WARN] tls-environment` — "CHECKER ENVIRONMENT trust issue, NOT a target certificate problem" |
+| Request also failed to complete | transport failure | `[WARN] tls` — "target-side TLS/chain issue" |
+
+Verified both directions:
+
+| Direction | How | Result |
+|---|---|---|
+| Checker environment | real trusted site, where this workstation's openssl bundle lags the new root while the request succeeds | `tls-environment`, exit 3, wording explicitly rules out a site problem ✔ |
+| Target-side | self-signed fixture (transport rejected) | `tls`, "target-side", asserts **not** `CHECKER ENVIRONMENT` ✔ (automated) |
+
+Only the second direction is automatable offline; the first requires a real site
+whose chain is trusted by the system bundle but not by openssl. That path is
+marked as manually verified rather than claimed as covered.
+
 ### Honest limitation (NOT automated)
 
 **"Overall PASS with a trusted certificate" is not covered by the suite.**

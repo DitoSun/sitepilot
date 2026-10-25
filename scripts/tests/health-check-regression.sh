@@ -276,6 +276,12 @@ if [ -f "$WORK/c-valid.pem" ]; then
   run_case "TLS expired 3h -> FAIL"        "https://127.0.0.1:$((PORT_BASE+14))" 1 "FAIL"               "EXPIRED 2h|EXPIRED 3h"     "0 days" --timeout 4
   run_case "TLS expired 5d -> FAIL"        "https://127.0.0.1:$((PORT_BASE+15))" 1 "FAIL"               "EXPIRED 4d|EXPIRED 5d"     "0 days" --timeout 4
   run_case "TLS hostname mismatch -> FAIL" "https://127.0.0.1:$((PORT_BASE+16))" 1 "FAIL"               "does NOT match"            "" --timeout 4
+  # Chain classification (v1.0.1 semantic fix): an untrusted chain must be
+  # attributed to the TARGET when the request itself could not complete, and to
+  # the CHECKER when the request completed fine. Only the first direction is
+  # automatable offline (self-signed fixture); the second needs a real trusted
+  # site and is documented as manually verified in docs/validation.md.
+  run_case "TLS untrusted chain -> target-side, not checker" "https://127.0.0.1:$((PORT_BASE+11))" 1 "FAIL" "target-side" "CHECKER ENVIRONMENT" --timeout 4
 else
   for c in "TLS long-valid" "TLS renewal window" "TLS <24h" "TLS expired 1s" "TLS expired 3h" "TLS expired 5d" "TLS hostname mismatch"; do
     record_result "$c" skip "certificate generation unsupported on this openssl"
