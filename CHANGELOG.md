@@ -5,6 +5,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- **`README.zh-CN.md`** — full Chinese README, written for Chinese-reading
+  developers rather than machine-translated. Same structure as the English one so
+  the two stay in sync; language switcher on both.
+- **`docs/agent-evaluation.md`** — A/B evaluation of whether the skill changes
+  agent behaviour: 5 frozen fixtures, fresh-context agents, control vs. SitePilot,
+  5-dimension scoring, behavioural delta, evaluation gaps, and a promotion claims
+  gate. **The control condition scored at or above SitePilot (50 vs 48)**; this is
+  reported as-is.
+- **`evaluation/fixtures/`** — the five fixtures plus content hashes, so the
+  evaluation is reproducible.
+
+### Changed
+- **README restructured for first-time readers**: hero → what → why → quick start
+  → try it → learned in the wild → lessons can be wrong → experience base →
+  core principles. Quick Start reduced to clone + "read SKILL.md"; the previous
+  install matrix moved out of the first screen.
+- **"Works on any stack" replaced with "The core is stack-agnostic."** The
+  stronger claim was not supported by the evidence.
+- Experience figures presented as two separate axes (origin / evidence) with an
+  explicit note that they are not additive.
+
 Post-release **packaging and documentation** fix. No functional, behavioural or
 knowledge-base change — the v1.0.1 release and its tag are unchanged.
 
