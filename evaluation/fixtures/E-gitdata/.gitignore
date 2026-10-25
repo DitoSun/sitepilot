@@ -1,0 +1,5 @@
+node_modules/
+# Runtime state — must never be committed
+data/
+*.log
+.env

@@ -1,0 +1,1 @@
+{"name":"acme-site","version":"1.0.0","scripts":{"build":"node build.js","start":"node -e \"console.log('serving dist on 3003')\""}}

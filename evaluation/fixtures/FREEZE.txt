@@ -1,0 +1,6 @@
+# Fixture freeze — 2026-10-25T15:01:59Z
+A-static f3923e7a452b9eb5d5aac651bc54ef16
+B-api 391fd7e8dbabf150947d89f1fe277210
+C-auth 76dadb5f5f8efc911f9c3f037403a5d4
+D-deploy 852699c473432b4b08f30d3bbecace4f
+E-gitdata e23a9ddb28da7c04ec575e520b57e202

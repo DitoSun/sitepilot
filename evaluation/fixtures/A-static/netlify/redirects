@@ -1,0 +1,3 @@
+# Legacy URL structure
+/docs/api      /docs/api.html        302
+/old/pricing   /pricing              301
